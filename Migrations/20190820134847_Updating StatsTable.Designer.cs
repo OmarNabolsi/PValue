@@ -10,8 +10,8 @@ using PValue.Data;
 namespace PValue.Migrations
 {
     [DbContext(typeof(PValueDbContext))]
-    [Migration("20190820084432_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20190820134847_Updating StatsTable")]
+    partial class UpdatingStatsTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -53,20 +53,24 @@ namespace PValue.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Indicators_12");
+                    b.ToTable("Indicator_12");
                 });
 
-            modelBuilder.Entity("PValue.Models.P_Table", b =>
+            modelBuilder.Entity("PValue.Models.StatsTable", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<double>("Denominator");
+                    b.Property<int>("Count");
+
+                    b.Property<double>("DenominatorSum");
+
+                    b.Property<double>("LevenesTest");
 
                     b.Property<double>("Mean");
 
-                    b.Property<double>("Numerator");
+                    b.Property<double>("NumeratorSum");
 
                     b.Property<int>("OppeCycleID");
 
@@ -74,19 +78,29 @@ namespace PValue.Migrations
 
                     b.Property<int>("OppePhysicianSubGroupID");
 
-                    b.Property<double>("P_Value");
+                    b.Property<double>("PValue");
 
-                    b.Property<double>("PeerDenominator");
+                    b.Property<double>("PValue_EqualVariances");
+
+                    b.Property<double>("PValue_UnequalVariances");
+
+                    b.Property<string>("PayrollID");
+
+                    b.Property<int>("PeerCount");
+
+                    b.Property<double>("PeerDenominatorSum");
 
                     b.Property<double>("PeerMean");
 
-                    b.Property<double>("PeerNumerator");
+                    b.Property<double>("PeerNumeratorSum");
 
-                    b.Property<string>("PhysicianID");
+                    b.Property<double>("PeerStandardDeviation");
+
+                    b.Property<double>("StandardDeviation");
 
                     b.HasKey("ID");
 
-                    b.ToTable("P_Table");
+                    b.ToTable("StatsTable");
                 });
 #pragma warning restore 612, 618
         }

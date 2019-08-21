@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PValue.Data;
 
 namespace PValue.Migrations
 {
     [DbContext(typeof(PValueDbContext))]
-    partial class PValueDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190820133849_Adding StatsTable")]
+    partial class AddingStatsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,12 +71,6 @@ namespace PValue.Migrations
                     b.Property<double>("Mean");
 
                     b.Property<double>("NumeratorSum");
-
-                    b.Property<int>("OppeCycleID");
-
-                    b.Property<int>("OppeIndicatorID");
-
-                    b.Property<int>("OppePhysicianSubGroupID");
 
                     b.Property<double>("PValue");
 

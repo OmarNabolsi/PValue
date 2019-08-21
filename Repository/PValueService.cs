@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Accord.Statistics;
@@ -14,7 +15,7 @@ namespace PValue.Repository
         {
             var subGrps = context.Indicator_12
                     .GroupBy(i => i.OppePhysicianSubGroupID)
-                    .Where(i => i.Key == 27)
+                    // .Where(i => i.Key == 27)
                     .ToList();
 
             IList<Physician> indList = new List<Physician>();
@@ -26,11 +27,17 @@ namespace PValue.Repository
                     .GroupBy(i => i.PayrollID);
                 foreach (var item in grps)
                 {
+                    var phys = context.Indicator_12
+                        .First(i => i.PayrollID == item.Key);
+
                     var grp = new Physician
                     {
-                        ID = item.Key,
-                        SubGroupID = subGrp.Key
+                        ID = phys.PayrollID,
+                        SubGroupID = phys.OppePhysicianSubGroupID,
+                        OppeCycleID = phys.OppeCycleID,
+                        OppeIndicatorID = phys.OppeIndicatorID
                     };
+                    
                     indList.Add(grp);
                 }
             }
@@ -50,6 +57,7 @@ namespace PValue.Repository
             double physDenVal = 0;
             double physMean = 0;
             int i = 0;
+            
             foreach (var phy in phys)
             {
                 x1[i] = phy.num;
@@ -81,7 +89,7 @@ namespace PValue.Repository
             double pValueA = 0;
             double pValueNA = 0;
 
-            if (peers.Any())
+            if (peers.Count() >= 5)
             {
                 int j = 0;
                 foreach (var peer in peers)
@@ -106,6 +114,8 @@ namespace PValue.Repository
                 var levenes = new LeveneTest(X);
                 levenesTest = levenes.PValue;
                 #endregion
+
+                Console.WriteLine($"Grp = {item.SubGroupID} - Phys = {item.ID}");
 
                 #region T-Test Equal variances assumed
                 var ta = new TwoSampleTTest(x1, x2, assumeEqualVariances: true);
