@@ -1,72 +1,107 @@
-﻿using System;
-using System.Linq;
+using System;
 using Microsoft.Extensions.DependencyInjection;
-using PValue.Data;
-using PValue.Models;
 using PValue.Repository;
+using PValue.Data;
+using System.Linq;
+using System.Collections.Generic;
+using PValue.Models;
+using PValue.DTOs;
 
 namespace PValue
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Calculating Stats...");
-
-            using (var context = new PValueDbContext())
-            {
+            #region Register Services
                 var serviceProvider = new ServiceCollection()
-                    .AddSingleton<IPValueService, PValueService>()
+                    .AddDbContext<PValueDbContext>()
+                    .AddSingleton<IRepoService, RepoService>()
                     .BuildServiceProvider();
+            #endregion
 
-                //----//
-                var pService = serviceProvider.GetService<IPValueService>();
-                var indList = pService.GetIndicatorList(context);
+            #region GetIndicatorInfo
+                Console.WriteLine("Which indicator would you like to calculate the statistics for?");
+                var indicatorId = 0;
+                Int32.TryParse(Console.ReadLine(), out indicatorId);
 
-                foreach (var item in indList)
+                var repo = serviceProvider.GetService<IRepoService>();
+
+                var indicatorInfo = repo.GetIndicatorById(indicatorId);
+                if(indicatorInfo == null)
                 {
-                    //----//
-                    var phys = context.Indicator_12
-                        .Where(p => p.PayrollID == item.ID);
-
-                    if (phys.Count() >= 5)
-                    {
-                        var stats = pService.CalculateStats(context, item);
-                    
-                        #region Insert Stats
-                        var statsTable = new StatsTable()
-                        {
-                            PayrollID = stats.PayrollID,
-                            OppeCycleID = item.OppeCycleID,
-                            OppeIndicatorID = item.OppeIndicatorID,
-                            OppePhysicianSubGroupID = item.SubGroupID,
-                            Count = stats.Count,
-                            NumeratorSum = stats.NumeratorSum,
-                            DenominatorSum = stats.DenominatorSum,
-                            Mean = stats.Mean,
-                            StandardDeviation = stats.StandardDeviation,
-                            PeerCount = stats.PeerCount,
-                            PeerNumeratorSum = stats.PeerNumeratorSum,
-                            PeerDenominatorSum = stats.PeerDenominatorSum,
-                            PeerMean = stats.PeerMean,
-                            PeerStandardDeviation = stats.PeerStandardDeviation,
-                            LevenesTest = stats.LevenesTest,
-                            PValue_EqualVariances = stats.PValue_EqualVariances,
-                            PValue_UnequalVariances = stats.PValue_UnequalVariances,
-                            PValue = stats.PValue
-                        };
-                        context.StatsTable.Add(statsTable);
-                        context.SaveChanges();
-                        #endregion
-                    }
-                    
-                    // Console.WriteLine($"{stats.PayrollID} - Physician - {stats.Count} - {stats.Mean} - {stats.StandardDeviation} - {stats.LevenesTest} - {stats.PValue_EqualVariances}");
-                    // Console.WriteLine($"        - Peers     - {stats.PeerCount} - {stats.PeerMean} - {stats.PeerStandardDeviation} -  - {stats.PValue_UnequalVariances} ---> {stats.PValue}");
+                    Console.WriteLine($"Indicator {indicatorId} not found.");
                 }
-                Console.WriteLine("Done!");
-                Console.WriteLine("Press Enter Key...");
-                Console.Read();
-            }
+                else
+                {
+                    Console.WriteLine("ID = {0}, IndicatorId = {1}, HypothesisTest = {2}", indicatorInfo.ID, indicatorInfo.OppeIndicatorID, indicatorInfo.HypothesisTest);
+                    #endregion
+
+
+                    #region GetPhysicianList
+                        var physiciansList = repo.GetPhysiciansList(indicatorId);
+                        var addedCount = 0;
+                        var updatedCount = 0;
+
+                        foreach (var phys in physiciansList)
+                        {
+                            Statistics stats= new Statistics();
+                            switch (indicatorInfo.HypothesisTest)
+                            {
+                                case 1:
+                                    #region T-Test
+                                        stats = repo.CalculateTTest(phys);
+                                    #endregion
+                                    break;
+                                case 2:
+                                    stats = repo.CalculateChiSquare(phys);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            #region Update Database    
+                                if(stats.IsValid)
+                                {
+                                    Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}",
+                                    stats.DenominatorSum
+                                    ,stats.PayrollID
+                                    ,stats.Mean
+                                    ,stats.StandardDeviation
+                                    ,stats.PeerDenominatorSum
+                                    ,stats.NumeratorSum
+                                    ,stats.PeerNumeratorSum
+                                    ,stats.PeerMean
+                                    ,stats.PeerStandardDeviation
+                                    ,stats.LevenesTest
+                                    ,stats.PValue_EqualVariances
+                                    ,stats.PValue_UnequalVariances
+                                    ,stats.PValue
+                                    ,phys.OppeCycleID
+                                    ,phys.OppeIndicatorID
+                                    ,phys.SubGroupID);
+                                    var result = repo.AddOrUpdateStatsTable(stats, phys);
+
+                                    if(result)
+                                    {
+                                        updatedCount++;
+                                    }
+                                    else
+                                    {
+                                        addedCount++;
+                                    }
+                                }
+                            #endregion
+                        }
+                    #endregion
+
+                    Console.WriteLine("Added {0} records, Updated {1} records.", addedCount, updatedCount);
+                }
+                
+            
+            Console.WriteLine("");
+
+            Console.WriteLine("Press any key...");
+            Console.ReadKey();
         }
     }
 }

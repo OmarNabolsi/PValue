@@ -19,5 +19,6 @@ namespace PValue.DTOs
         public double PValue_EqualVariances { get; set; }
         public double PValue_UnequalVariances { get; set; }
         public double PValue { get; set; }
+        public bool IsValid { get; set; }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PValue.Data;
 
 namespace PValue.Migrations
 {
     [DbContext(typeof(PValueDbContext))]
-    partial class PValueDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190821070117_AddingGeneralSetup")]
+    partial class AddingGeneralSetup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,13 +125,15 @@ namespace PValue.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<double>("Alpha");
+                    b.Property<int>("Count");
 
-                    b.Property<double>("Count");
+                    b.Property<double>("DenominatorSum");
 
                     b.Property<double>("LevenesTest");
 
                     b.Property<double>("Mean");
+
+                    b.Property<double>("NumeratorSum");
 
                     b.Property<int>("OppeCycleID");
 
@@ -145,17 +149,17 @@ namespace PValue.Migrations
 
                     b.Property<string>("PayrollID");
 
-                    b.Property<double>("PeerCount");
+                    b.Property<int>("PeerCount");
+
+                    b.Property<double>("PeerDenominatorSum");
 
                     b.Property<double>("PeerMean");
 
+                    b.Property<double>("PeerNumeratorSum");
+
                     b.Property<double>("PeerStandardDeviation");
 
-                    b.Property<double>("PeerSum");
-
                     b.Property<double>("StandardDeviation");
-
-                    b.Property<double>("Sum");
 
                     b.HasKey("ID");
 

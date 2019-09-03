@@ -12,5 +12,8 @@ namespace PValue.Data
 
         public DbSet<Indicator_12> Indicator_12 { get; set; }
         public DbSet<StatsTable> StatsTable { get; set; }
+        public DbSet<IndicatorsInfo> IndicatorsInfo { get; set; }
+        public DbSet<IndicatorsData> IndicatorsData { get; set; }
+        public DbSet<HypothesisTests> HypothesisTests { get; set; }
     }
 }
